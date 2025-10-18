@@ -3,3 +3,21 @@ title: "Analyse_Article_ADM_QuentinMarais"
 output: github_document
 ---
 
+```{r}
+ runs <- read.csv("SraRunTable (3).csv", header = TRUE, stringsAsFactors = FALSE)
+
+head(runs)
+```
+```{r}
+srr_list <- runs$Run
+writeLines(srr_list, "SRR_Acc_list.txt")
+```
+
+Ensuite je souhaite télécharger tous les runs listés dans mon nouveau dossier .txt
+
+```{r}
+
+
+
+```
+
