@@ -3,6 +3,12 @@ title: "Analyse_Article_ADM_QuentinMarais"
 output: github_document
 ---
 
+# Installation du package DADA2
+```{r}
+library(dada2)
+```
+
+# Chargement du jeu de données
 ```{r}
  runs <- read.csv("SraRunTable (3).csv", header = TRUE, stringsAsFactors = FALSE)
 

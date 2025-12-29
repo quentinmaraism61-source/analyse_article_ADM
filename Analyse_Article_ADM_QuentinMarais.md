@@ -1,6 +1,16 @@
 Analyse_Article_ADM_QuentinMarais
 ================
 
+# Installation du package DADA2
+
+``` r
+library(dada2)
+```
+
+    ## Loading required package: Rcpp
+
+# Chargement du jeu de données
+
 ``` r
  runs <- read.csv("SraRunTable (3).csv", header = TRUE, stringsAsFactors = FALSE)
 
