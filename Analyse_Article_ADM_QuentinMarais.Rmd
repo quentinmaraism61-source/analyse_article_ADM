@@ -102,6 +102,7 @@ Il arrive régulièrement que des reads contiennent des erreurs de séquençage.
 ```{r}
 errF <- learnErrors(filtFs, multithread=TRUE)
 ```
+
 ```{r}
 errR <- learnErrors(filtRs, multithread=TRUE)
 ```
@@ -200,15 +201,34 @@ COMMENTAIRE / Grande perte d'information !
 # Assignation taxonomique
 
 ```{r}
-
+taxa <- assignTaxonomy(seqtab.nochim, "~/analyse_article_ADM/silva_nr99_v138.2_toGenus_trainset.fa.gz?download=1", multithread=TRUE)
 ```
+
+
+```{r}
+taxa.print <- taxa 
+rownames(taxa.print) <- NULL
+head(taxa.print)
+```
+
 
 COMMENTAIRE
 
-
-
-
-
-
 ATTENTION : APRES ASSIGNATION, faut dégager les eucaryotes (séquences mal assignées ou NA). 
+
+
+# Conclusion générale DADA2
+
+
+
+
+# Phyloseq
+
+
+
+
+
+
+
+
 

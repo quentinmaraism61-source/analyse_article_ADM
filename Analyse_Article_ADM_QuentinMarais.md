@@ -371,7 +371,36 @@ COMMENTAIRE / Grande perte d’information !
 
 # Assignation taxonomique
 
+``` r
+taxa <- assignTaxonomy(seqtab.nochim, "~/analyse_article_ADM/silva_nr99_v138.2_toGenus_trainset.fa.gz?download=1", multithread=TRUE)
+```
+
+``` r
+taxa.print <- taxa 
+rownames(taxa.print) <- NULL
+head(taxa.print)
+```
+
+    ##      Kingdom     Phylum           Class                 Order          
+    ## [1,] "Bacteria"  "Pseudomonadota" "Alphaproteobacteria" "Rickettsiales"
+    ## [2,] "Eukaryota" NA               NA                    NA             
+    ## [3,] "Bacteria"  "Pseudomonadota" "Alphaproteobacteria" "Rickettsiales"
+    ## [4,] "Bacteria"  NA               NA                    NA             
+    ## [5,] "Eukaryota" NA               NA                    NA             
+    ## [6,] "Bacteria"  "Pseudomonadota" "Alphaproteobacteria" "Rickettsiales"
+    ##      Family         Genus
+    ## [1,] "Mitochondria" NA   
+    ## [2,] NA             NA   
+    ## [3,] "Mitochondria" NA   
+    ## [4,] NA             NA   
+    ## [5,] NA             NA   
+    ## [6,] "Mitochondria" NA
+
 COMMENTAIRE
 
 ATTENTION : APRES ASSIGNATION, faut dégager les eucaryotes (séquences
 mal assignées ou NA).
+
+# Conclusion générale DADA2
+
+# Phyloseq
