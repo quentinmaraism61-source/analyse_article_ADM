@@ -3,29 +3,212 @@ title: "Analyse_Article_ADM_QuentinMarais"
 output: github_document
 ---
 
-Essai 1
 
 # Installation du package DADA2
+
 ```{r}
 library(dada2)
+library(Rcpp)
 ```
 
-# Chargement du jeu de données
+# Chargement du jeu de (méta)données
+
 ```{r}
  runs <- read.csv("SraRunTable (3).csv", header = TRUE, stringsAsFactors = FALSE)
 
 head(runs)
 ```
-```{r}
-srr_list <- runs$Run
-writeLines(srr_list, "SRR_Acc_list.txt")
-```
-
-Ensuite je souhaite télécharger tous les runs listés dans mon nouveau dossier .txt
 
 ```{r}
 
+getwd()
+
+path <- "/home/rstudio/analyse_article_ADM/data/" # On donne le chemin d'accès vers les fichiers fastq 
+list.files(path = "/home/rstudio/analyse_article_ADM/data/", pattern = "\\.fastq\\.gz$")
+
+list.files(path) # On s'assure que nos fichiers fastq apparaissent bien dans path. 
+
+```
+Les données ont correctement été importées, on peut à présent commencer l'analyse à proprement parler. 
+
+# Création des listes pour les fichiers Forward (fnFs) et Reverse (fnRs)
+
+```{r}
+fnFs <- sort(list.files(path, pattern="_1.fastq.gz", full.names = TRUE))
+fnRs <- sort(list.files(path, pattern="_2.fastq.gz", full.names = TRUE))
+```
+
+# Inspection des profils de qualité des reads
+## Qualité de la lecture Forward
+
+```{r}
+
+sample.names <- sapply(strsplit(basename(fnFs), "_"), `[`, 1) # extraction du nom des échantillons
+
+plotQualityProfile(fnFs[1:2])
 
 
 ```
+
+COMMENTAIRE SUR LA QUALITE DES READS
+
+
+
+
+
+
+
+
+## Qualtié de la lecture Reverse
+
+```{r}
+
+plotQualityProfile(fnRs[1:2])
+
+```
+COMMENTAIRE QUALITE LECTURE REVERSE 
+
+
+
+
+# Avan-Filtration
+
+```{r}
+filtFs <- file.path(path, "filtered", paste0(sample.names, "_F_filt.fastq.gz"))
+filtRs <- file.path(path, "filtered", paste0(sample.names, "_R_filt.fastq.gz"))
+names(filtFs) <- sample.names
+names(filtRs) <- sample.names
+```
+On attribut les noms des échantillons aux noms des fichiers filtrés. 
+
+# Filtration et pré-traitement des reads
+
+```{r}
+out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen=c(240,160),
+              maxN=0, maxEE=c(2,2), truncQ=2, rm.phix=TRUE,
+              compress=TRUE, multithread=TRUE) # On Windows set multithread=FALSE (only needed for filterAndTrim)
+head(out)
+```
+Le tableau ci-dessus nous montre le nombre de reads avant (reads.in) et après (reads.out) filtration.En premier lieu, on peut remarquer que le nombre de reads par échantillon est hétérogène (allant de 245 à plus de 500 000). 
+
+Ensuite concernant la filtration, on observe que dans la majorité des cas, une grande parties des reads passent le filtre bien que la quantité apparentre de reads ne passant le filtre puisse être non négligeable. En effet, il faudra prendre en compte des biais comme le fait que les échantillons avec peu de reads peuvent apparaître comme pauvres en diversité car la profondeure de séquençage est insuffisante. Les échantillons très riches en reads vont dominer certaines analyses (ordination, clustering...). 
+Il faudra garder en tête l'hétérogénéité du nombre de reads et la perte d'informations (reads) dans la suite des analyses (problèmes potentiels dans la normalisation, distances écologiques, ordination, taxa rares...). 
+
+
+# Taux d'erreur de séquençage
+
+Il arrive régulièrement que des reads contiennent des erreurs de séquençage. La pipeline DADA2 permet de discriminer les séquences réels des séquences contenant des erreurs de séquençage. 
+
+```{r}
+errF <- learnErrors(filtFs, multithread=TRUE)
+```
+```{r}
+errR <- learnErrors(filtRs, multithread=TRUE)
+```
+
+## Visualisation du taux d'erreurs de séquençage
+
+```{r}
+plotErrors(errF, nominalQ=TRUE)
+```
+
+# Inférence des échantillons : Identification des ASV (amplicon sequence variant) présentes dans chaque échantillon
+
+## Algorithme de DADA2 sur les reads Forward
+
+```{r}
+dadaFs <- dada(filtFs, err=errF, multithread=TRUE)
+```
+
+## Algorithme de DADA2 sur les reads Reverse
+
+```{r}
+dadaRs <- dada(filtRs, err=errR, multithread=TRUE)
+```
+
+## Résultats : Visualisation d'un exemple
+
+```{r}
+dadaFs[[1]]
+```
+Pour le premier échantillon, l'algorithme a identifié 937 variants biologiques au sein 63 774 séquences. 
+
+
+COMMENTAIRE
+
+
+
+# Fusion des reads appariés
+
+```{r}
+mergers <- mergePairs(dadaFs, filtFs, dadaRs, filtRs, verbose=TRUE)
+
+head(mergers[[1]])
+```
+
+# Construction d'une table contenant les séquences
+
+
+```{r}
+seqtab <- makeSequenceTable(mergers)
+dim(seqtab)
+```
+
+
+COMMENTAIRE
+
+# Distruibution des longueurs des reads
+
+```{r}
+table(nchar(getSequences(seqtab)))
+```
+
+COMMENTAIRE
+
+# Suppression des chimères
+
+```{r}
+seqtab.nochim <- removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE, verbose=TRUE)
+dim(seqtab.nochim)
+```
+
+# Proportion de reads ayant passé la filtration des chimères
+
+```{r}
+sum(seqtab.nochim)/sum(seqtab)
+```
+
+
+
+COMMENTAIRE
+
+
+# Suivi des reads au sein de la pipeline
+
+```{r}
+getN <- function(x) sum(getUniques(x))
+track <- cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(mergers, getN), rowSums(seqtab.nochim))
+# If processing a single sample, remove the sapply calls: e.g. replace sapply(dadaFs, getN) with getN(dadaFs)
+colnames(track) <- c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim")
+rownames(track) <- sample.names
+head(track)
+```
+
+
+COMMENTAIRE / Grande perte d'information !
+
+# Assignation taxonomique
+
+```{r}
+
+```
+
+COMMENTAIRE
+
+
+
+
+
+
+ATTENTION : APRES ASSIGNATION, faut dégager les eucaryotes (séquences mal assignées ou NA). 
 
