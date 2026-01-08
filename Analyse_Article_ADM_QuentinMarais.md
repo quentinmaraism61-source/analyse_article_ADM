@@ -750,7 +750,7 @@ table(tax_table(ps_re)[, "Phylum"], useNA = "always")
     ##               Actinomycetota               Armatimonadota 
     ##                         2301                            9 
     ##                    Bacillota                 Bacteroidota 
-    ##                          618                          441 
+    ##                          616                          441 
     ##             Bdellovibrionota                Caldisericota 
     ##                           34                            2 
     ##   Candidatus Eremiobacterota      Candidatus Kapabacteria 
@@ -766,7 +766,7 @@ table(tax_table(ps_re)[, "Phylum"], useNA = "always")
     ##             Halanaerobiaeota               Incertae Sedis 
     ##                            2                            3 
     ##                  Myxococcota              Patescibacteria 
-    ##                           64                           79 
+    ##                           64                           78 
     ##              Planctomycetota               Pseudomonadota 
     ##                           27                         1043 
     ## SAR324 clade(Marine group B)      Thermodesulfobacteriota 
@@ -774,7 +774,7 @@ table(tax_table(ps_re)[, "Phylum"], useNA = "always")
     ##               Thermoproteota            Verrucomicrobiota 
     ##                            1                           77 
     ##                         <NA> 
-    ##                           27
+    ##                           30
 
 On constate qu’une grande partie de nos reads ont été assigné à une
 diversité de phyla procaryotes. On note que les Actinomycetota
